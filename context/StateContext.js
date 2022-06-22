@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 
 const Context = createContext();
@@ -88,6 +88,34 @@ export const StateContext = ({ children }) => {
     setTotalQuantities((prevTotalQuantities) => prevTotalQuantities - product.quantity);
   };
 
+  const clearStateAfterPurchese = () => {
+    localStorage.clear();
+    setCartItems([]);
+    setTotalPrice(0);
+    setTotalQuantities(0);
+  };
+
+  const saveStateToLocalStorage = (cartItems, totalPrice, totalQuantities) => {
+    localStorage.setItem("cart", JSON.stringify({ cartItems, totalPrice, totalQuantities }));
+  };
+
+  useEffect(() => {
+    const cartItemsLS = JSON.parse(localStorage.getItem("cart"));
+    if (cartItemsLS?.cartItems) {
+      setCartItems(cartItemsLS.cartItems);
+      setTotalPrice(cartItemsLS.totalPrice);
+      setTotalQuantities(cartItemsLS.totalQuantities);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      saveStateToLocalStorage(cartItems, totalPrice, totalQuantities);
+    } else {
+      localStorage.clear();
+    }
+  }, [cartItems]);
+
   return (
     <Context.Provider
       value={{
@@ -102,6 +130,7 @@ export const StateContext = ({ children }) => {
         setShowCart,
         toggleCartItemQuantity,
         onRemoveCartItem,
+        clearStateAfterPurchese,
       }}
     >
       {children}
